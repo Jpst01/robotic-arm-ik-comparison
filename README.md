@@ -66,8 +66,8 @@ z = L1 + L2 * sin(theta_2) + L3 * sin(theta_2 + theta_3)
 robotic-arm-ik-comparison/
 ├── CMakeLists.txt
 ├── README.md
-├── training_config.yaml            # ML training hyperparameters
-├── assets/                         # Generated charts and visualizations
+├── training_config.yaml            
+├── assets/                         
 │   ├── arm_static_poses.png
 │   ├── arm_trajectory.gif
 │   ├── arm_workspace.png
@@ -77,9 +77,9 @@ robotic-arm-ik-comparison/
 │   ├── benchmark_errors.png
 │   └── benchmark_timing.png
 ├── cpp/
-│   ├── main.cpp                    # Algorithmic demo
-│   ├── ml_demo.cpp                 # ML inference demo
-│   ├── benchmark.cpp               # Performance comparison
+│   ├── main.cpp                    
+│   ├── ml_demo.cpp                 
+│   ├── benchmark.cpp               
 │   ├── kinematics/
 │   │   ├── Kinematics.h
 │   │   └── Kinematics.cpp
@@ -95,21 +95,21 @@ robotic-arm-ik-comparison/
 │       ├── MLInference.h
 │       └── MLInference.cpp
 ├── python/
-│   ├── dataset_generator.py        # FK dataset generation
-│   ├── train_model.py              # PyTorch training + ONNX export
-│   ├── visualize.py                # 3D arm visualization (5 demos)
-│   └── benchmark_charts.py         # Benchmark comparison charts
-├── models/                         # Trained model weights
-│   ├── ik_model.onnx               # ONNX exported model
-│   ├── ik_model.onnx.data          # ONNX model data
-│   └── ik_model.pth                # PyTorch checkpoint
-├── data/                           # Generated datasets
+│   ├── dataset_generator.py        
+│   ├── train_model.py              
+│   ├── visualize.py                
+│   └── benchmark_charts.py         
+├── models/                         
+│   ├── ik_model.onnx               
+│   ├── ik_model.onnx.data          
+│   └── ik_model.pth                
+├── data/                           
 │   ├── train.csv
 │   ├── val.csv
 │   ├── test.csv
-│   └── benchmark_results.csv       # Per-target benchmark results
+│   └── benchmark_results.csv       
 └── tests/
-    └── test_kinematics.cpp         # Unit test suite
+    └── test_kinematics.cpp         
 ```
 
 ---
