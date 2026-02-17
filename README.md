@@ -4,24 +4,6 @@ A 3-DOF robotic arm control system comparing **traditional analytical inverse ki
 
 ---
 
-## Table of Contents
-
-1. [Architecture](#architecture)
-2. [Robot Specification](#robot-specification)
-3. [Build Instructions](#build-instructions)
-4. [Algorithmic IK Solution](#algorithmic-ik-solution)
-5. [ML Pipeline](#ml-pipeline)
-6. [Benchmark Results](#benchmark-results)
-7. [Visualization](#visualization)
-8. [Obstacle Avoidance](#obstacle-avoidance)
-9. [Testing](#testing)
-10. [Comparative Analysis](#comparative-analysis)
-11. [Project Structure](#project-structure)
-12. [Future Improvements](#future-improvements)
-13. [Lessons Learned and Recommendations](#lessons-learned-and-recommendations)
-
----
-
 ## Architecture
 
 ```
@@ -74,6 +56,60 @@ r = L2 * cos(theta_2) + L3 * cos(theta_2 + theta_3)
 x = cos(theta_1) * r
 y = sin(theta_1) * r
 z = L1 + L2 * sin(theta_2) + L3 * sin(theta_2 + theta_3)
+```
+
+---
+
+## Project Structure
+
+```
+robotic-arm-ik-comparison/
+├── CMakeLists.txt
+├── README.md
+├── training_config.yaml            # ML training hyperparameters
+├── assets/                         # Generated charts and visualizations
+│   ├── arm_static_poses.png
+│   ├── arm_trajectory.gif
+│   ├── arm_workspace.png
+│   ├── arm_obstacle_avoidance.png
+│   ├── arm_obstacle_avoidance.gif
+│   ├── benchmark_summary.png
+│   ├── benchmark_errors.png
+│   └── benchmark_timing.png
+├── cpp/
+│   ├── main.cpp                    # Algorithmic demo
+│   ├── ml_demo.cpp                 # ML inference demo
+│   ├── benchmark.cpp               # Performance comparison
+│   ├── kinematics/
+│   │   ├── Kinematics.h
+│   │   └── Kinematics.cpp
+│   ├── planning/
+│   │   ├── TrajectoryPlanner.h
+│   │   ├── TrajectoryPlanner.cpp
+│   │   ├── ObstacleChecker.h
+│   │   └── ObstacleChecker.cpp
+│   ├── control/
+│   │   ├── ControlLoop.h
+│   │   └── ControlLoop.cpp
+│   └── ml_inference/
+│       ├── MLInference.h
+│       └── MLInference.cpp
+├── python/
+│   ├── dataset_generator.py        # FK dataset generation
+│   ├── train_model.py              # PyTorch training + ONNX export
+│   ├── visualize.py                # 3D arm visualization (5 demos)
+│   └── benchmark_charts.py         # Benchmark comparison charts
+├── models/                         # Trained model weights
+│   ├── ik_model.onnx               # ONNX exported model
+│   ├── ik_model.onnx.data          # ONNX model data
+│   └── ik_model.pth                # PyTorch checkpoint
+├── data/                           # Generated datasets
+│   ├── train.csv
+│   ├── val.csv
+│   ├── test.csv
+│   └── benchmark_results.csv       # Per-target benchmark results
+└── tests/
+    └── test_kinematics.cpp         # Unit test suite
 ```
 
 ---
@@ -178,17 +214,7 @@ Both solutions reach the same Cartesian position with different joint angles, pr
 4. Split 80/10/10 into train/validation/test sets
 5. Save as CSV files in the `data/` directory
 
-### Model Architecture
 
-**Multi-Layer Perceptron (MLP):**
-
-```
-Input (3: x, y, z)
-  -> Linear(128) + ReLU
-  -> Linear(128) + ReLU
-  -> Linear(64)  + ReLU
-  -> Linear(3: theta_1, theta_2, theta_3)
-```
 
 ### Training Configuration
 
@@ -359,123 +385,9 @@ cd build && ./run_tests
 | **Edge cases** | Handled via geometry | May fail near workspace boundary |
 | **Multiple solutions** | Explicit elbow-up/down | Single prediction per input |
 
-### Failure Case Analysis
-
-- **Analytical IK failures:** Occur only for unreachable targets (outside workspace). The solver correctly returns `std::nullopt`.
-- **ML IK failures:** Concentrated near workspace boundaries and singularities. Position error increases when the target is near the maximum reach distance. The `MLInference` class mitigates this with automatic fallback to analytical IK when error exceeds 5 cm.
-
-### Recommendation
-
-For a known 3-DOF arm, analytical IK is preferred due to its exactness and speed. ML-based IK is valuable for higher-DOF robots, redundant manipulators, or when the kinematic model is uncertain or difficult to derive analytically.
-
 ---
 
-## Project Structure
-
-```
-robotic-arm-ik-comparison/
-├── CMakeLists.txt
-├── README.md
-├── training_config.yaml            # ML training hyperparameters
-├── assets/                         # Generated charts and visualizations
-│   ├── arm_static_poses.png
-│   ├── arm_trajectory.gif
-│   ├── arm_workspace.png
-│   ├── arm_obstacle_avoidance.png
-│   ├── arm_obstacle_avoidance.gif
-│   ├── benchmark_summary.png
-│   ├── benchmark_errors.png
-│   └── benchmark_timing.png
-├── cpp/
-│   ├── main.cpp                    # Algorithmic demo
-│   ├── ml_demo.cpp                 # ML inference demo
-│   ├── benchmark.cpp               # Performance comparison
-│   ├── kinematics/
-│   │   ├── Kinematics.h
-│   │   └── Kinematics.cpp
-│   ├── planning/
-│   │   ├── TrajectoryPlanner.h
-│   │   ├── TrajectoryPlanner.cpp
-│   │   ├── ObstacleChecker.h
-│   │   └── ObstacleChecker.cpp
-│   ├── control/
-│   │   ├── ControlLoop.h
-│   │   └── ControlLoop.cpp
-│   └── ml_inference/
-│       ├── MLInference.h
-│       └── MLInference.cpp
-├── python/
-│   ├── dataset_generator.py        # FK dataset generation
-│   ├── train_model.py              # PyTorch training + ONNX export
-│   ├── visualize.py                # 3D arm visualization (5 demos)
-│   └── benchmark_charts.py         # Benchmark comparison charts
-├── models/                         # Trained model weights
-│   ├── ik_model.onnx               # ONNX exported model
-│   ├── ik_model.onnx.data          # ONNX model data
-│   └── ik_model.pth                # PyTorch checkpoint
-├── data/                           # Generated datasets
-│   ├── train.csv
-│   ├── val.csv
-│   ├── test.csv
-│   └── benchmark_results.csv       # Per-target benchmark results
-└── tests/
-    └── test_kinematics.cpp         # Unit test suite
-```
+## Summary
+The analytical inverse kinematics solver provides high accuracy and deterministic behavior, while the neural-network solver offers faster inference after training. The shared control framework enables direct comparison of performance, robustness, and computational efficiency.
 
 ---
-
-## Future Improvements
-
-1. **Higher-DOF arms:** Extend to 6-DOF or 7-DOF (redundant) robots where analytical IK is intractable and ML approaches become essential.
-
-2. **Jacobian refinement:** Use the ML prediction as an initial guess for iterative Jacobian-based correction to achieve sub-millimeter accuracy.
-
-3. **Model quantization:** Apply INT8 quantization to the ONNX model for faster inference on edge devices.
-
-4. **Data augmentation:** Add workspace-boundary samples and singularity-near samples to improve ML robustness in edge cases.
-
-5. **Potential field obstacle avoidance:** Replace the simple target-offset replanning with a gradient-based potential field approach for smoother obstacle avoidance.
-
-6. **Task-space interpolation:** Add Cartesian-space trajectory interpolation (linear + SLERP) as an alternative to joint-space interpolation.
-
-7. **Real-time control loop:** Integrate with a real-time scheduler (e.g., SCHED_FIFO) for deterministic control timing.
-
-8. **Web visualization:** Add a browser-based 3D viewer (e.g., Three.js) for interactive demonstrations.
-
----
-
-## Lessons Learned and Recommendations
-
-### Technical Insights
-
-- **Analytical IK is unbeatable for known geometry.** For a 3-DOF arm with known link lengths, the closed-form solution is exact, deterministic, and approximately 100x faster than ML inference. There is no accuracy-speed trade-off.
-
-- **ML-based IK excels in complexity.** For higher-DOF arms (6+), redundant manipulators, or robots with uncertain kinematics (e.g., cable-driven), ML-based approaches avoid the need for complex geometric derivations.
-
-- **The MLP architecture is sufficient.** A simple 4-layer MLP (128-128-64-3) achieves less than 5 mm average position error with only 50,000 training samples. Deeper networks showed diminishing returns for this problem.
-
-- **Data quality matters more than quantity.** Uniform sampling of joint angles provides good coverage, but targeted sampling near workspace boundaries and singularities would further improve ML robustness.
-
-### Production Recommendations
-
-- **Use analytical IK as the primary solver** for known robot configurations. It is exact, fast, and requires no training.
-
-- **Use ML IK as a fallback or warm-start** for iterative solvers when the analytical solution is unavailable or for higher-DOF robots.
-
-- **Always validate ML predictions** by checking forward kinematics. The `MLInference` class demonstrates this pattern with automatic fallback to analytical IK.
-
-- **ONNX Runtime is production-ready** for C++ inference. It handles model loading, memory management, and thread safety, making integration straightforward.
-
-### Common Pitfalls
-
-- **IK singularities:** At workspace boundaries (d approximately equal to L2 + L3), the elbow angle approaches 0 or pi, causing numerical instability. The `std::clamp` on `cos(theta_3)` prevents NaN from `acos`.
-
-- **Multiple solutions:** The elbow-up vs. elbow-down ambiguity must be handled explicitly. `inverseAll()` returns both solutions so the planner can choose the better one.
-
-- **ONNX version compatibility:** PyTorch ONNX export requires matching `onnx` and `onnxscript` package versions. Pin these in the Python environment to avoid compatibility issues.
-
----
-
-## License
-
-This project was created as a technical assessment submission.
