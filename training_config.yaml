@@ -1,0 +1,45 @@
+model:
+  architecture: MLP
+  input_dim: 3
+  output_dim: 3
+  hidden_layers:
+    - 128
+    - 128
+    - 64
+  activation: ReLU
+  dropout: 0.0
+
+training:
+  batch_size: 256
+  learning_rate: 0.001
+  optimizer: Adam
+  loss_function: MSE
+  max_epochs: 500
+  early_stopping:
+    enabled: true
+    patience: 15
+    monitor: val_loss
+
+dataset:
+  total_samples: 50000
+  splits:
+    train: 0.80
+    val: 0.10
+    test: 0.10
+  noise_std: 0.001
+  joint_limits:
+    min: -3.14159
+    max: 3.14159
+
+robot:
+  dof: 3
+  link_lengths:
+    L1: 0.30
+    L2: 0.25
+    L3: 0.15
+
+export:
+  format: ONNX
+  opset_version: 17
+  output_path: models/ik_model.onnx
+  pytorch_path: models/ik_model.pth
